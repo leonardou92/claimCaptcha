@@ -22,11 +22,7 @@ Este proyecto automatiza la resolución de captchas de selección de imágenes e
 
 
 
-  ===============================
-  Variables de entorno
-  ===============================
-
-  # URL de la página principal donde está el captcha
+  ```
   TARGET_URL=https://tupagina.com/captcha
 
   # Clave de API de Gemini (obligatoria)
