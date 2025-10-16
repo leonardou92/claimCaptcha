@@ -21,14 +21,20 @@ Este proyecto automatiza la resolución de captchas de selección de imágenes e
 2. Crea y activa un entorno virtual (opcional pero recomendado):
 
 
-  ```
-  # Variables de entorno requeridas
-  TARGET_URL=https://tupagina.com/captcha   # URL de la página principal donde está el captcha
-  GEMINI_API_KEY=tu_api_key_aqui           # Tu clave de Gemini
 
-  # Opcional: objetivo del captcha (si se deja vacío se detecta automáticamente)
+  ===============================
+  Variables de entorno
+  ===============================
+
+  # URL de la página principal donde está el captcha
+  TARGET_URL=https://tupagina.com/captcha
+
+  # Clave de API de Gemini (obligatoria)
+  GEMINI_API_KEY=tu_api_key_aqui
+
+  # Palabra objetivo del captcha (opcional, si se deja vacío se detecta automáticamente)
   TARGET_NAME=
-  ```
+
 
   **Resolución de URLs de imágenes:**
   - Si la celda contiene una imagen `<img src="...">`, se usará ese src tal cual (absoluto o relativo, como lo entrega el HTML).
