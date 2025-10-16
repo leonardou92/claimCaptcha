@@ -1,0 +1,8 @@
+# Entorno virtual
+.venv/
+__pycache__/
+*.pyc
+# Archivos de entorno y caché
+.env
+.env.*
+gemini_cache.json

@@ -20,7 +20,22 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 
-URL = "https://alpha123.uk/airdrop-sim2.html"
+
+# Cargar variables de entorno
+from dotenv import load_dotenv
+load_dotenv()
+
+
+# Variables globales de entorno
+TARGET_URL = os.getenv("TARGET_URL", "https://alpha123.uk/airdrop-sim2.html")
+IMG_BASE_URL = os.getenv("IMG_BASE_URL", TARGET_URL)  # Por defecto igual a TARGET_URL
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+URL = TARGET_URL
+
+# Configurar la API key de Gemini para la librería
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 # Inicialización global del driver y wait (adaptado para webdriver-manager)
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -29,10 +44,41 @@ wait = WebDriverWait(driver, 20)
 # --- FUNCIONES AUXILIARES ---
 def get_image_url_from_style(style):
     try:
-        # Busca url('...') o url("...") o url(...)
+        import inspect
+        frame = inspect.currentframe().f_back
+        cell = frame.f_locals.get('cell')
+        # Si la celda tiene una imagen con src, usar ese src tal cual
+        if cell is not None:
+            try:
+                img = cell.find_element(By.TAG_NAME, 'img')
+                src = img.get_attribute('src')
+                if src:
+                    return src
+            except Exception:
+                pass
+        # Si no, extraer del style como antes
         m = re.search(r'url\((?:\'|\")?(.*?)(?:\'|\")?\)', style)
         if m and m.group(1):
-            return m.group(1)
+            url = m.group(1)
+            # Si es relativa, intentamos detectar la base según el contenedor de la imagen
+            if url.startswith('/'):
+                from urllib.parse import urljoin, urlparse
+                base_url = None
+                if cell is not None:
+                    try:
+                        parent = cell.find_element(By.XPATH, './ancestor::*[@id]')
+                        base_url = parent.get_attribute('data-base-url')
+                        if not base_url:
+                            env_key = f"IMG_BASE_URL_{parent.get_attribute('id').upper()}"
+                            base_url = os.getenv(env_key)
+                    except Exception:
+                        pass
+                if not base_url:
+                    base_url = os.getenv("IMG_BASE_URL", os.getenv("TARGET_URL", "https://alpha123.uk/airdrop-sim2.html"))
+                parsed = urlparse(base_url)
+                base = f"{parsed.scheme}://{parsed.netloc}"
+                return urljoin(base, url)
+            return url
     except Exception:
         pass
     return None
@@ -153,12 +199,13 @@ def main():
             except Exception:
                 cells = []
 
-        # Objetivo
-        target_name = ''
-        try:
-            target_name = driver.find_element(By.ID, 'targetName').text.strip().lower()
-        except Exception:
-            target_name = ''
+        # Objetivo: primero variable de entorno, si no, lo toma de la página
+        target_name = os.getenv("TARGET_NAME", "").strip().lower()
+        if not target_name:
+            try:
+                target_name = driver.find_element(By.ID, 'targetName').text.strip().lower()
+            except Exception:
+                target_name = ''
 
         print('Objeto objetivo:', target_name or '<vacío>')
         if not target_name:

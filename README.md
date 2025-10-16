@@ -19,20 +19,35 @@ Este proyecto automatiza la resolución de captchas de selección de imágenes e
 ## Instalación
 1. Clona el repositorio o copia los archivos en tu máquina.
 2. Crea y activa un entorno virtual (opcional pero recomendado):
-  ```bash
-  python3 -m venv .venv
-  source .venv/bin/activate
+
+
   ```
-3. Instala las dependencias:
-  ```bash
-  pip install -r requirements.txt
+  # Variables de entorno requeridas
+  TARGET_URL=https://tupagina.com/captcha   # URL de la página principal donde está el captcha
+  GEMINI_API_KEY=tu_api_key_aqui           # Tu clave de Gemini
+
+  # Opcional: objetivo del captcha (si se deja vacío se detecta automáticamente)
+  TARGET_NAME=
   ```
 
-## Variables de entorno
-Debes definir la clave de Gemini en tu entorno:
-```bash
-export GEMINI_API_KEY="tu_clave_de_gemini"
+  **Resolución de URLs de imágenes:**
+  - Si la celda contiene una imagen `<img src="...">`, se usará ese src tal cual (absoluto o relativo, como lo entrega el HTML).
+  - Si no, se extraerá la URL del style/background y se resolverá como absoluta respecto a la página principal.
 ```
+TARGET_URL=https://tupagina.com/captcha         # URL de la página principal donde está el captcha
+IMG_BASE_URL=https://tupagina.com               # (opcional) Base global para las imágenes, por defecto igual a TARGET_URL
+IMG_BASE_URL_IMAGEGRID=https://imagenes.com     # (opcional) Base específica para imágenes del contenedor con id="imageGrid"
+GEMINI_API_KEY=tu_api_key_aqui                 # Tu clave de Gemini
+TARGET_NAME=perro                              # (opcional) Objetivo del captcha, si se deja vacío se detecta automáticamente
+```
+
+
+**Resolución de URLs de imágenes:**
+- Si la celda contiene una imagen `<img src="...">`, se usará ese src tal cual (absoluto o relativo).
+- Si no, se extraerá la URL del style/background y se resolverá así:
+  1. Si el contenedor padre de la imagen tiene `data-base-url`, se usa ese valor como base.
+  2. Si existe una variable de entorno `IMG_BASE_URL_<IDCONTENEDOR>`, se usa como base (por ejemplo, `IMG_BASE_URL_IMAGEGRID`).
+  3. Si no, se usa `IMG_BASE_URL` o `TARGET_URL` como fallback.
 
 ## Uso
 Ejecuta el script principal:
